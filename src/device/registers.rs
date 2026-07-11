@@ -1,8 +1,30 @@
 #![allow(unused)]
 // Registers
+// Hidden
+// [ 7 {AUX_VDDIO, BLANK} | 6:1 XG_OFFS_TC]
+pub const RA_AUX_VDDIO: u8 = 0x00;
+pub const RA_YH_OFFS_TC: u8 = 0x01;
+pub const RA_ZH_OFFS_TC: u8 = 0x02;
+
+//[7:0]
+pub const RA_X_FINE_GAIN: u8 = 0x03;
+pub const RA_Y_FINE_GAIN: u8 = 0x04;
+pub const RA_Z_FINE_GAIN: u8 = 0x05;
+
+// [15:0]
+pub const RA_XA_OFFS_H: u8 = 0x06;
+pub const RA_XA_OFFS_L_TC: u8 = 0x07;
+pub const RA_YA_OFFS_H: u8 = 0x08;
+pub const RA_YA_OFFS_L_TC: u8 = 0x09;
+pub const RA_ZA_OFFS_H: u8 = 0x0a;
+pub const RA_ZA_OFFS_L_TC: u8 = 0x0b;
+
+// Test registers
+// [7-5 {X/Y/Z}_TEST[4-2] | G_TEST[4-0] ]
 pub const RA_SELF_TEST_X: u8 = 0x0D;
 pub const RA_SELF_TEST_Y: u8 = 0x0E;
 pub const RA_SELF_TEST_Z: u8 = 0x0F;
+// []
 pub const RA_SELF_TEST_A: u8 = 0x10;
 
 pub const RA_SMPLRT_DIV: u8 = 0x19;
@@ -57,6 +79,7 @@ pub const RA_GYRO_YOUT_L: u8 = 0x46;
 pub const RA_GYRO_ZOUT_H: u8 = 0x47;
 pub const RA_GYRO_ZOUT_L: u8 = 0x48;
 
+// external sensors storage [7:0]
 pub const RA_EXT_SENS_DATA_00: u8 = 0x49;
 pub const RA_EXT_SENS_DATA_01: u8 = 0x4A;
 pub const RA_EXT_SENS_DATA_02: u8 = 0x4B;
@@ -82,6 +105,8 @@ pub const RA_EXT_SENS_DATA_21: u8 = 0x5E;
 pub const RA_EXT_SENS_DATA_22: u8 = 0x5F;
 pub const RA_EXT_SENS_DATA_23: u8 = 0x60;
 
+
+
 pub const RA_I2C_SLV0_DO: u8 = 0x63;
 pub const RA_I2C_SLV1_DO: u8 = 0x64;
 pub const RA_I2C_SLV2_DO: u8 = 0x65;
@@ -89,7 +114,7 @@ pub const RA_I2C_SLV3_DO: u8 = 0x66;
 pub const RA_SIGNAL_PATH_RESET: u8 = 0x67;
 pub const RA_MOT_DETECT_CTRL: u8 = 0x68;
 pub const RA_USER_CTRL: u8 = 0x69;
-pub const RA_PWR_MGM_1: u8 = 0x6A;
+pub const RA_PWR_MGMT_1: u8 = 0x6A;
 pub const RA_PWR_MGMT_2: u8 = 0x6B;
 pub const RA_FIFO_COUNTH: u8 = 0x72;
 pub const RA_FIFO_COUNTL: u8 = 0x73;

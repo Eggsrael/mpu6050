@@ -1,5 +1,7 @@
 use core::f32;
 
+use embedded_hal::i2c::Error;
+
 // Board
 pub const ADDRESS_AD0_LOW: u8 = 0x68;
 pub const ADDRESS_AD0_HIGH: u8 = 0x69;
@@ -16,13 +18,13 @@ pub const REFERNCE_GRAVITY: f32 = 9.80665;
 
 // temp
 pub const TEMP_SENSITIVITY: f32 = 340.0;
-pub const TEMP_OFFSET: f32 = -521.0; // c 35
+pub const TEMP_OFFSET: f32 = 36.25; // c 35
 
 // temp = lsb - offset /sensitivity +
 // temp = (lsb + 521 / 340) + 35
 
 // Gyroscope Range
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum GyroRange {
     Degree250 = 0,
     Degree500,
@@ -45,7 +47,7 @@ impl TryFrom<u8> for GyroRange {
 }
 
 // Accelerometer Range
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum AccelRange {
     G2 = 0,
     G4,
@@ -67,19 +69,22 @@ impl TryFrom<u8> for AccelRange {
     }
 }
 
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum TempatureRange {
     C = 0,
     F,
     K,
 }
 
-impl From<u8> for TempatureRange {
-    fn from(temp_setting: u8) -> Self {
+impl TryFrom<u8> for TempatureRange {
+    type Error = ();
+
+    fn try_from(temp_setting: u8) -> Result<Self, Self::Error> {
         match temp_setting {
-            0 => TempatureRange::C,
-            1 => TempatureRange::F,
-            2 => TempatureRange::K,
-            _ => TempatureRange::C,
+            0 => Ok(TempatureRange::C),
+            1 => Ok(TempatureRange::F),
+            2 => Ok(TempatureRange::K),
+            _ => Err(()),
         }
     }
 }
