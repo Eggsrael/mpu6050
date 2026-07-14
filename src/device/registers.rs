@@ -69,8 +69,8 @@ pub const RA_ACCEL_YOUT_L: u8 = 0x3E;
 pub const RA_ACCEL_ZOUT_H: u8 = 0x3F;
 pub const RA_ACCEL_ZOUT_L: u8 = 0x40;
 
-pub const RA_TEMP_OUT_L: u8 = 0x41;
-pub const RA_TEMP_OUT_H: u8 = 0x42;
+pub const RA_TEMP_OUT_H: u8 = 0x41;
+pub const RA_TEMP_OUT_L: u8 = 0x42;
 
 pub const RA_GYRO_XOUT_H: u8 = 0x43;
 pub const RA_GYRO_XOUT_L: u8 = 0x44;
@@ -114,8 +114,8 @@ pub const RA_I2C_SLV3_DO: u8 = 0x66;
 pub const RA_SIGNAL_PATH_RESET: u8 = 0x67;
 pub const RA_MOT_DETECT_CTRL: u8 = 0x68;
 pub const RA_USER_CTRL: u8 = 0x69;
-pub const RA_PWR_MGMT_1: u8 = 0x6A;
-pub const RA_PWR_MGMT_2: u8 = 0x6B;
+pub const RA_PWR_MGMT_1: u8 = 0x6B;
+pub const RA_PWR_MGMT_2: u8 = 0x6C;
 pub const RA_FIFO_COUNTH: u8 = 0x72;
 pub const RA_FIFO_COUNTL: u8 = 0x73;
 pub const RA_FIFO_R_W: u8 = 0x74;

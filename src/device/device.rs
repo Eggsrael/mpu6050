@@ -18,7 +18,7 @@ pub const REFERNCE_GRAVITY: f32 = 9.80665;
 
 // temp
 pub const TEMP_SENSITIVITY: f32 = 340.0;
-pub const TEMP_OFFSET: f32 = 36.25; // c 35
+pub const TEMP_OFFSET: f32 = 36.53; // c 35
 
 // temp = lsb - offset /sensitivity +
 // temp = (lsb + 521 / 340) + 35
@@ -70,20 +70,20 @@ impl TryFrom<u8> for AccelRange {
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]
-pub enum TempatureRange {
+pub enum TemperatureRange {
     C = 0,
     F,
     K,
 }
 
-impl TryFrom<u8> for TempatureRange {
+impl TryFrom<u8> for TemperatureRange {
     type Error = ();
 
     fn try_from(temp_setting: u8) -> Result<Self, Self::Error> {
         match temp_setting {
-            0 => Ok(TempatureRange::C),
-            1 => Ok(TempatureRange::F),
-            2 => Ok(TempatureRange::K),
+            0 => Ok(TemperatureRange::C),
+            1 => Ok(TemperatureRange::F),
+            2 => Ok(TemperatureRange::K),
             _ => Err(()),
         }
     }

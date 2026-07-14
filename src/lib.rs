@@ -6,8 +6,10 @@ use crate::device::device::{
     ACCEL_SENSITIVTY, DEFAULT_ADDRRESS, GYRO_SENSITIVITY, TEMP_OFFSET, TEMP_SENSITIVITY,
 };
 
+use core::unimplemented;
+
 use crate::device::registers::{self, *};
-pub use device::device::{AccelRange, GyroRange, TempatureRange};
+pub use device::device::{AccelRange, GyroRange, TemperatureRange};
 use embedded_hal::delay::{self, DelayNs};
 use embedded_hal::i2c::{I2c, SevenBitAddress};
 
@@ -18,7 +20,7 @@ pub enum MpuError<E> {
     I2cError(E),
     InvalidChipID(u8),
     InvalidGyroRange(GyroRange),
-    InvalidTempatureRange(TempatureRange),
+    InvalidTempatureRange(TemperatureRange),
 }
 
 impl<E> From<E> for MpuError<E> {
@@ -31,7 +33,7 @@ pub struct Mpu6050Config {
     global_delay_time: u32,
     acel_range: AccelRange,
     gyro_range: GyroRange,
-    temp_measurment: TempatureRange,
+    temp_measurment: TemperatureRange,
     calibration_length_sec: u32,
     calib_offsets: (f32, f32, f32),
 }
@@ -42,7 +44,7 @@ impl Default for Mpu6050Config {
             global_delay_time: 200,
             acel_range: AccelRange::G2,
             gyro_range: GyroRange::Degree250,
-            temp_measurment: TempatureRange::C,
+            temp_measurment: TemperatureRange::C,
             calibration_length_sec: 2,
             calib_offsets: (0.0, 0.0, 0.0),
         }
@@ -69,33 +71,13 @@ where
     }
 
     fn wake(&mut self) -> Result<(), MpuError<E>> {
-        self.i2c.write(self.address, &[RA_PWR_MGMT_2, 0x00])?;
+        self.i2c.write(self.address, &[RA_PWR_MGMT_1, 0x01])?;
         Ok(())
     }
 
     #[allow(dead_code)]
     fn sleep(&mut self) -> Result<(), MpuError<E>> {
-        self.i2c.write(self.address, &[RA_PWR_MGMT_2, 0x01])?;
-        Ok(())
-    }
-
-    /*
-    pub fn calibrate_gyro(delay: &mut impl DelayNs) -> Result<(), <MpuError<E>> {
-        unimplemented!("help");
-        let mut i = 0;
-        loop {
-
-        }
-        Ok(())
-    }
-        */
-
-    pub fn init(&mut self, delay: &mut impl DelayNs) -> Result<(), MpuError<E>> {
-        self.wake()?;
-        delay.delay_ns(self.config.global_delay_time);
-        self.set_accel_range(self.config.acel_range)?;
-        delay.delay_ns(self.config.global_delay_time);
-        self.set_gyro_range(self.config.gyro_range)?;
+        self.i2c.write(self.address, &[RA_PWR_MGMT_1, 0x00])?;
         Ok(())
     }
 
@@ -107,7 +89,23 @@ where
         unimplemented!("Master/Slave not implemented as of this time");
     }
 
-    pub fn set_temp_measure(&mut self, temp_measure: TempatureRange) -> Result<(), MpuError<E>> {
+    pub fn calibrate_device(delay: &mut impl DelayNs) -> Result<(), MpuError<E>> {
+        unimplemented!("Still needs to be added");
+    }
+
+
+    pub fn init(&mut self, delay: &mut impl DelayNs) -> Result<(), MpuError<E>> {
+        self.wake()?;
+        delay.delay_ms(self.config.global_delay_time);
+
+        self.set_accel_range(self.config.acel_range)?;
+        self.set_gyro_range(self.config.gyro_range)?;
+
+        Ok(())
+    }
+
+
+    pub fn set_temp_measure(&mut self, temp_measure: TemperatureRange) -> Result<(), MpuError<E>> {
         self.config.temp_measurment = temp_measure;
         Ok(())
     }
@@ -128,18 +126,19 @@ where
         Ok(())
     }
 
-    pub fn get_tempature(&mut self) -> Result<f32, MpuError<E>> {
+    pub fn get_temperature(&mut self) -> Result<f32, MpuError<E>> {
         let mut buf = [0u8; 2];
         self.i2c
             .write_read(self.address, &[RA_TEMP_OUT_H], &mut buf)?;
 
         let raw_temp = i16::from_be_bytes(buf);
-        let celcius = ((raw_temp as f32) / TEMP_SENSITIVITY) + TEMP_OFFSET; //(((raw  / 340) + 36.53)
-        match self.config.temp_measurment {
-            TempatureRange::C => return Ok(celcius),
-            TempatureRange::F => return Ok((celcius * 9.0 / 5.0) + 35.0),
-            TempatureRange::K => return Ok((celcius + 273.15).abs()),
-        }
+        let celcius = (raw_temp as f32 / TEMP_SENSITIVITY) + TEMP_OFFSET;
+
+        Ok(match self.config.temp_measurment {
+            TemperatureRange::C => celcius,
+            TemperatureRange::F => (celcius * 9.0 / 5.0) + 32.0,
+            TemperatureRange::K => celcius + 273.15,
+        })
     }
 
     pub fn set_delay_length(&mut self, delay: u32) {
