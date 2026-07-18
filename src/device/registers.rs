@@ -1,10 +1,8 @@
 #![allow(unused)]
 // Registers
-// Hidden
-// [ 7 {AUX_VDDIO, BLANK} | 6:1 XG_OFFS_TC]
-pub const RA_AUX_VDDIO: u8 = 0x00;
-pub const RA_YH_OFFS_TC: u8 = 0x01;
-pub const RA_ZH_OFFS_TC: u8 = 0x02;
+pub const RA_XGOFFS_TC: u8 = 0x00;
+pub const RA_YGOFFS_TC: u8 = 0x01;
+pub const RA_ZGOFFS_TC: u8 = 0x02;
 
 //[7:0]
 pub const RA_X_FINE_GAIN: u8 = 0x03;
@@ -16,22 +14,33 @@ pub const RA_XA_OFFS_H: u8 = 0x06;
 pub const RA_XA_OFFS_L_TC: u8 = 0x07;
 pub const RA_YA_OFFS_H: u8 = 0x08;
 pub const RA_YA_OFFS_L_TC: u8 = 0x09;
-pub const RA_ZA_OFFS_H: u8 = 0x0a;
-pub const RA_ZA_OFFS_L_TC: u8 = 0x0b;
+pub const RA_ZA_OFFS_H: u8 = 0x0A;
+pub const RA_ZA_OFFS_L_TC: u8 = 0x0B;
 
 // Test registers
 // [7-5 {X/Y/Z}_TEST[4-2] | G_TEST[4-0] ]
 pub const RA_SELF_TEST_X: u8 = 0x0D;
 pub const RA_SELF_TEST_Y: u8 = 0x0E;
 pub const RA_SELF_TEST_Z: u8 = 0x0F;
-// []
 pub const RA_SELF_TEST_A: u8 = 0x10;
+
+pub const RA_XG_OFFS_USRH: u8 = 0x13;
+pub const RA_XG_OFFS_USRL: u8 = 0x14;
+pub const RA_YG_OFFS_USRH: u8 = 0x15;
+pub const RA_YG_OFFS_USRL: u8 = 0x16;
+pub const RA_ZG_OFFS_USRH: u8 = 0x17;
+pub const RA_ZG_OFFS_USRL: u8 = 0x18;
 
 pub const RA_SMPLRT_DIV: u8 = 0x19;
 pub const RA_CONFIG: u8 = 0x1A;
 pub const RA_GYRO_CONFIG: u8 = 0x1B;
 pub const RA_ACCEL_CONFIG: u8 = 0x1C;
+pub const RA_FF_THR: u8 = 0x1D;
+pub const RA_FF_DUR: u8 = 0x1E;
 pub const RA_MOT_THR: u8 = 0x1F;
+pub const RA_MOT_DUR: u8 = 0x20;
+pub const RA_ZMOT_THR: u8 = 0x21;
+pub const RA_ZMOT_DUR: u8 = 0x22;
 pub const RA_FIFO_EN: u8 = 0x23;
 pub const RA_I2C_MST_CTRL: u8 = 0x24;
 
@@ -103,10 +112,9 @@ pub const RA_EXT_SENS_DATA_19: u8 = 0x5C;
 pub const RA_EXT_SENS_DATA_20: u8 = 0x5D;
 pub const RA_EXT_SENS_DATA_21: u8 = 0x5E;
 pub const RA_EXT_SENS_DATA_22: u8 = 0x5F;
+
 pub const RA_EXT_SENS_DATA_23: u8 = 0x60;
-
-
-
+pub const RA_MOT_DETECT_STATUS: u8 = 0x61;
 pub const RA_I2C_SLV0_DO: u8 = 0x63;
 pub const RA_I2C_SLV1_DO: u8 = 0x64;
 pub const RA_I2C_SLV2_DO: u8 = 0x65;
@@ -116,6 +124,12 @@ pub const RA_MOT_DETECT_CTRL: u8 = 0x68;
 pub const RA_USER_CTRL: u8 = 0x69;
 pub const RA_PWR_MGMT_1: u8 = 0x6B;
 pub const RA_PWR_MGMT_2: u8 = 0x6C;
+pub const RA_DMP_BANK: u8 = 0x6D;
+pub const RA_DMP_RW_PNT: u8 = 0x6E;
+pub const RA_DMP_REG: u8 = 0x6F;
+
+pub const RA_DMP_REG_1: u8 = 0x70;
+pub const RA_DMP_REG_2: u8 = 0x71;
 pub const RA_FIFO_COUNTH: u8 = 0x72;
 pub const RA_FIFO_COUNTL: u8 = 0x73;
 pub const RA_FIFO_R_W: u8 = 0x74;
