@@ -1,12 +1,7 @@
 use core::f32;
 
-use embedded_hal::i2c::Error;
 
 // Board
-pub const ADDRESS_AD0_LOW: u8 = 0x68;
-pub const ADDRESS_AD0_HIGH: u8 = 0x69;
-pub const DEFAULT_ADDRRESS: u8 = ADDRESS_AD0_LOW;
-
 pub const EXTERNAL_CLOCK_FREQ: f32 = 32.768;
 
 // accelerometer
@@ -20,8 +15,25 @@ pub const REFERNCE_GRAVITY: f32 = 9.80665;
 pub const TEMP_SENSITIVITY: f32 = 340.0;
 pub const TEMP_OFFSET: f32 = 36.53; // c 35
 
+//dlfp
+pub const EXT_SYNC_SET: u8 = 3;
+pub const DLPF_CFG_BIT_SIZE: u8 = 3;
+
+
 // temp = lsb - offset /sensitivity +
 // temp = (lsb + 521 / 340) + 35
+
+
+// Digital Low Pass Filter Config
+pub enum DlpfConfig {
+    Dlpf256 = 0,
+    Dlpf188 = 1,
+    Dlpf98 = 2,
+    Dlpf42 = 3,
+    Dlpf21 = 4,
+    Dlpf10 = 5,
+    Dlpf5 = 6,
+}
 
 // Gyroscope Range
 #[derive(Debug, PartialEq, Clone, Copy)]
@@ -85,6 +97,44 @@ impl TryFrom<u8> for TemperatureRange {
             1 => Ok(TemperatureRange::F),
             2 => Ok(TemperatureRange::K),
             _ => Err(()),
+        }
+    }
+}
+
+impl DlpfConfig {
+    pub fn from_raw(raw: u8) -> Option<Self> {
+        match raw {
+            0 => Some(DlpfConfig::Dlpf256),
+            1 => Some(DlpfConfig::Dlpf188),
+            2 => Some(DlpfConfig::Dlpf98),
+            3 => Some(DlpfConfig::Dlpf42),
+            4 => Some(DlpfConfig::Dlpf21),
+            5 => Some(DlpfConfig::Dlpf10),
+            6 => Some(DlpfConfig::Dlpf5),
+            _ => None,
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Clone, Copy)]
+pub struct SlaveAddress{
+    slave_address0: u8,
+    slave_address1: u8,
+    slave_address2: u8,
+    slave_address3: u8,
+}
+
+impl SlaveAddress {
+    pub fn default() -> Self {
+        Self::new(0x0, 0x0, 0x0, 0x0)
+    }
+
+    pub fn new(slave_address0: u8, slave_address1: u8, slave_address2: u8, slave_address3: u8) -> Self {
+        Self {
+            slave_address0,
+            slave_address1,
+            slave_address2,
+            slave_address3,
         }
     }
 }

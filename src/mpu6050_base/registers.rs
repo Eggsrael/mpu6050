@@ -69,6 +69,7 @@ pub const RA_I2C_SLV4_DI: u8 = 0x35;
 pub const RA_I2C_MST_STATUS: u8 = 0x36;
 pub const RA_INT_PIN_CFG: u8 = 0x37;
 pub const RA_INT_ENABLE: u8 = 0x38;
+pub const RA_DMP_INT_STATUS: u8 = 0x39;
 pub const RA_INIT_STATUS: u8 = 0x3A;
 
 pub const RA_ACCEL_XOUT_H: u8 = 0x3B;
@@ -89,6 +90,11 @@ pub const RA_GYRO_ZOUT_H: u8 = 0x47;
 pub const RA_GYRO_ZOUT_L: u8 = 0x48;
 
 // external sensors storage [7:0]
+//
+// I don't acutally know what this is. it looks like its
+//  meant for slave sensors but, I haven't been able to test
+// them yet
+//
 pub const RA_EXT_SENS_DATA_00: u8 = 0x49;
 pub const RA_EXT_SENS_DATA_01: u8 = 0x4A;
 pub const RA_EXT_SENS_DATA_02: u8 = 0x4B;
@@ -112,21 +118,23 @@ pub const RA_EXT_SENS_DATA_19: u8 = 0x5C;
 pub const RA_EXT_SENS_DATA_20: u8 = 0x5D;
 pub const RA_EXT_SENS_DATA_21: u8 = 0x5E;
 pub const RA_EXT_SENS_DATA_22: u8 = 0x5F;
-
 pub const RA_EXT_SENS_DATA_23: u8 = 0x60;
+
 pub const RA_MOT_DETECT_STATUS: u8 = 0x61;
 pub const RA_I2C_SLV0_DO: u8 = 0x63;
 pub const RA_I2C_SLV1_DO: u8 = 0x64;
 pub const RA_I2C_SLV2_DO: u8 = 0x65;
 pub const RA_I2C_SLV3_DO: u8 = 0x66;
-pub const RA_SIGNAL_PATH_RESET: u8 = 0x67;
-pub const RA_MOT_DETECT_CTRL: u8 = 0x68;
-pub const RA_USER_CTRL: u8 = 0x69;
+
+pub const RA_I2C_MST_DELAY_CTRL: u8 = 0x67;
+pub const RA_SIGNAL_PATH_RESET: u8 = 0x68;
+pub const RA_MOT_DETECT_CTRL: u8 = 0x69;
+pub const RA_USER_CTRL: u8 = 0x6A;
 pub const RA_PWR_MGMT_1: u8 = 0x6B;
 pub const RA_PWR_MGMT_2: u8 = 0x6C;
-pub const RA_DMP_BANK: u8 = 0x6D;
-pub const RA_DMP_RW_PNT: u8 = 0x6E;
-pub const RA_DMP_REG: u8 = 0x6F;
+pub const RA_BANK_SEL: u8 = 0x6D;
+pub const RA_MEM_START_ADDR: u8 = 0x6E;
+pub const RA_MEM_R_W: u8 = 0x6F;
 
 pub const RA_DMP_REG_1: u8 = 0x70;
 pub const RA_DMP_REG_2: u8 = 0x71;
@@ -134,3 +142,7 @@ pub const RA_FIFO_COUNTH: u8 = 0x72;
 pub const RA_FIFO_COUNTL: u8 = 0x73;
 pub const RA_FIFO_R_W: u8 = 0x74;
 pub const RA_WHO_AM_I: u8 = 0x75;
+
+pub const ADDRESS_AD0_LOW: u8 = 0x68;
+pub const ADDRESS_AD0_HIGH: u8 = 0x69;
+pub const DEFAULT_ADDRRESS: u8 = ADDRESS_AD0_LOW;
