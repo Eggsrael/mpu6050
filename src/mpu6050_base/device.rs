@@ -25,6 +25,8 @@ pub const DLPF_CFG_BIT_SIZE: u8 = 3;
 
 
 // Digital Low Pass Filter Config
+// based on GyroScope range
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum DlpfConfig {
     Dlpf256 = 0,
     Dlpf188 = 1,
@@ -33,6 +35,24 @@ pub enum DlpfConfig {
     Dlpf21 = 4,
     Dlpf10 = 5,
     Dlpf5 = 6,
+}
+
+impl TryFrom<u8> for DlpfConfig {
+    type Error = ();
+    fn try_from(value: u8) -> Result<Self, Self::Error> {
+        match value {
+            0 => Ok(DlpfConfig::Dlpf256),
+            1 => Ok(DlpfConfig::Dlpf188),
+            2 => Ok(DlpfConfig::Dlpf98),
+            3 => Ok(DlpfConfig::Dlpf42),
+            4 => Ok(DlpfConfig::Dlpf21),
+            5 => Ok(DlpfConfig::Dlpf10),
+            6 => Ok(DlpfConfig::Dlpf5),
+            _ => Err(())
+
+        }
+    }
+
 }
 
 // Gyroscope Range
@@ -97,21 +117,6 @@ impl TryFrom<u8> for TemperatureRange {
             1 => Ok(TemperatureRange::F),
             2 => Ok(TemperatureRange::K),
             _ => Err(()),
-        }
-    }
-}
-
-impl DlpfConfig {
-    pub fn from_raw(raw: u8) -> Option<Self> {
-        match raw {
-            0 => Some(DlpfConfig::Dlpf256),
-            1 => Some(DlpfConfig::Dlpf188),
-            2 => Some(DlpfConfig::Dlpf98),
-            3 => Some(DlpfConfig::Dlpf42),
-            4 => Some(DlpfConfig::Dlpf21),
-            5 => Some(DlpfConfig::Dlpf10),
-            6 => Some(DlpfConfig::Dlpf5),
-            _ => None,
         }
     }
 }
