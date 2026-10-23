@@ -145,4 +145,17 @@ pub const RA_WHO_AM_I: u8 = 0x75;
 
 pub const ADDRESS_AD0_LOW: u8 = 0x68;
 pub const ADDRESS_AD0_HIGH: u8 = 0x69;
-pub const DEFAULT_ADDRRESS: u8 = ADDRESS_AD0_LOW;
+pub const DEFAULT_ADDRESS: u8 = ADDRESS_AD0_LOW;
+pub const WHO_AM_I_VALUE: u8 = 0x68;
+
+// Register bit masks
+pub const CONFIG_DLPF_CFG_MASK: u8 = 0x07;
+pub const GYRO_CONFIG_FS_SEL_MASK: u8 = 0x18;
+pub const ACCEL_CONFIG_AFS_SEL_MASK: u8 = 0x18;
+
+pub const PWR_MGMT_1_DEVICE_RESET: u8 = 0x80;
+pub const PWR_MGMT_1_SLEEP: u8 = 0x40;
+pub const PWR_MGMT_1_CLKSEL_MASK: u8 = 0x07;
+pub const PWR_MGMT_1_CLKSEL_PLL_X_GYRO: u8 = 0x01;
+
+pub const USER_CTRL_FIFO_EN: u8 = 0x40;

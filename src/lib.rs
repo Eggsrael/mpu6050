@@ -1,5 +1,8 @@
 #![no_std]
 
-mod mpu6050_base;
+#[cfg(test)]
+extern crate std;
+
 pub mod mpu6050;
+mod mpu6050_base;
 pub mod mpu6050_dmp;

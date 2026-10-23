@@ -1,15 +1,16 @@
-use core::f32;
+#![allow(dead_code)]
 
+use core::f32;
 
 // Board
 pub const EXTERNAL_CLOCK_FREQ: f32 = 32.768;
 
 // accelerometer
-pub const ACCEL_SENSITIVTY: (f32, f32, f32, f32) = (16_384.0, 8_192.0, 4_096.0, 2_048.0);
+pub const ACCEL_SENSITIVITY: (f32, f32, f32, f32) = (16_384.0, 8_192.0, 4_096.0, 2_048.0);
 
 //gyro
 pub const GYRO_SENSITIVITY: (f32, f32, f32, f32) = (131.0, 65.5, 32.8, 16.4);
-pub const REFERNCE_GRAVITY: f32 = 9.80665;
+pub const REFERENCE_GRAVITY: f32 = 9.80665;
 
 // temp
 pub const TEMP_SENSITIVITY: f32 = 340.0;
@@ -39,8 +40,7 @@ impl TryFrom<u8> for DlpfConfig {
             4 => Ok(DlpfConfig::Dlpf21),
             5 => Ok(DlpfConfig::Dlpf10),
             6 => Ok(DlpfConfig::Dlpf5),
-            _ => Err(())
-
+            _ => Err(()),
         }
     }
 }
@@ -112,18 +112,20 @@ impl TryFrom<u8> for TemperatureRange {
 }
 
 #[derive(Debug, PartialEq, Clone, Copy)]
-pub struct SlaveAddress{
+pub struct SlaveAddress {
     pub slave_address0: Option<u8>,
     pub slave_address1: Option<u8>,
     pub slave_address2: Option<u8>,
     pub slave_address3: Option<u8>,
 }
 
-impl SlaveAddress {
-    pub fn default() -> Self {
+impl Default for SlaveAddress {
+    fn default() -> Self {
         Self::new()
     }
+}
 
+impl SlaveAddress {
     pub fn new() -> Self {
         Self {
             slave_address0: None,
