@@ -15,15 +15,6 @@ pub const REFERNCE_GRAVITY: f32 = 9.80665;
 pub const TEMP_SENSITIVITY: f32 = 340.0;
 pub const TEMP_OFFSET: f32 = 36.53; // c 35
 
-//dlfp
-pub const EXT_SYNC_SET: u8 = 3;
-pub const DLPF_CFG_BIT_SIZE: u8 = 3;
-
-
-// temp = lsb - offset /sensitivity +
-// temp = (lsb + 521 / 340) + 35
-
-
 // Digital Low Pass Filter Config
 // based on GyroScope range
 #[derive(Debug, PartialEq, Clone, Copy)]
@@ -52,7 +43,6 @@ impl TryFrom<u8> for DlpfConfig {
 
         }
     }
-
 }
 
 // Gyroscope Range
@@ -123,23 +113,23 @@ impl TryFrom<u8> for TemperatureRange {
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub struct SlaveAddress{
-    slave_address0: u8,
-    slave_address1: u8,
-    slave_address2: u8,
-    slave_address3: u8,
+    pub slave_address0: Option<u8>,
+    pub slave_address1: Option<u8>,
+    pub slave_address2: Option<u8>,
+    pub slave_address3: Option<u8>,
 }
 
 impl SlaveAddress {
     pub fn default() -> Self {
-        Self::new(0x0, 0x0, 0x0, 0x0)
+        Self::new()
     }
 
-    pub fn new(slave_address0: u8, slave_address1: u8, slave_address2: u8, slave_address3: u8) -> Self {
+    pub fn new() -> Self {
         Self {
-            slave_address0,
-            slave_address1,
-            slave_address2,
-            slave_address3,
+            slave_address0: None,
+            slave_address1: None,
+            slave_address2: None,
+            slave_address3: None,
         }
     }
 }
