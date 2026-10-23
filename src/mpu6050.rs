@@ -206,10 +206,10 @@ where
 
     pub fn verify_device(&mut self) -> Result<(), MpuError<E>> {
         let iam = self.get_who_am_i()?;
-        if iam == self.address {
+        if iam == WHO_AM_I_VALUE {
             Ok(())
         } else {
-            Err(MpuError::InvalidChipID(iam))
+            Err(MpuError::InvalidChipId(iam))
         }
     }
 
@@ -232,13 +232,13 @@ where
             return Err(MpuError::InvalidCalibrationCycles);
         }
 
-        let mut total = (0i64, 0i64, 0i64);
+        let mut total = (0i32, 0i32, 0i32);
 
         for _ in 0..cycles {
             let (x, y, z) = self.get_raw_gyro_all()?;
-            total.0 += x as i64;
-            total.1 += y as i64;
-            total.2 += z as i64;
+            total.0 += x as i32;
+            total.1 += y as i32;
+            total.2 += z as i32;
             delay.delay_ms(2);
         }
 
@@ -446,4 +446,258 @@ fn gyro_scale(range: GyroRange) -> f32 {
     }
 }
 
+// ---------------------------------- TESTS -------------------------------------
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use embedded_hal::i2c::{Error as I2cError, ErrorKind, ErrorType, Operation};
+    use std::vec::Vec;
+
+    #[derive(Debug, PartialEq, Eq)]
+    struct MockError;
+
+    impl I2cError for MockError {
+        fn kind(&self) -> ErrorKind {
+            ErrorKind::Other
+        }
+    }
+
+    struct MockI2c {
+        registers: [u8; 256],
+        writes: Vec<(u8, u8)>,
+    }
+
+    impl MockI2c {
+        fn new() -> Self {
+            let mut registers = [0u8; 256];
+            registers[RA_WHO_AM_I as usize] = WHO_AM_I_VALUE;
+            registers[RA_PWR_MGMT_1 as usize] = PWR_MGMT_1_SLEEP;
+
+            Self {
+                registers,
+                writes: Vec::new(),
+            }
+        }
+    }
+
+    impl ErrorType for MockI2c {
+        type Error = MockError;
+    }
+
+    impl I2c<SevenBitAddress> for MockI2c {
+        fn transaction(
+            &mut self,
+            _address: SevenBitAddress,
+            _operations: &mut [Operation<'_>],
+        ) -> Result<(), Self::Error> {
+            Err(MockError)
+        }
+
+        fn write(&mut self, _address: SevenBitAddress, bytes: &[u8]) -> Result<(), Self::Error> {
+            let [reg, data] = bytes else {
+                return Err(MockError);
+            };
+
+            self.registers[*reg as usize] = *data;
+            self.writes.push((*reg, *data));
+            Ok(())
+        }
+
+        fn write_read(
+            &mut self,
+            _address: SevenBitAddress,
+            bytes: &[u8],
+            buffer: &mut [u8],
+        ) -> Result<(), Self::Error> {
+            let [reg] = bytes else {
+                return Err(MockError);
+            };
+
+            let start = *reg as usize;
+            let end = start + buffer.len();
+            if end > self.registers.len() {
+                return Err(MockError);
+            }
+
+            buffer.copy_from_slice(&self.registers[start..end]);
+            Ok(())
+        }
+    }
+
+    struct MockDelay;
+
+    impl DelayNs for MockDelay {
+        fn delay_ns(&mut self, _ns: u32) {}
+    }
+
+    fn write_i16(registers: &mut [u8; 256], reg: u8, value: i16) {
+        let bytes = value.to_be_bytes();
+        registers[reg as usize] = bytes[0];
+        registers[reg as usize + 1] = bytes[1];
+    }
+
+    fn write_sample_data(sensor: &mut Mpu6050<MockI2c>) {
+        write_i16(&mut sensor.i2c.registers, RA_ACCEL_XOUT_H, 16_384);
+        write_i16(&mut sensor.i2c.registers, RA_ACCEL_YOUT_H, -16_384);
+        write_i16(&mut sensor.i2c.registers, RA_ACCEL_ZOUT_H, 8_192);
+        write_i16(&mut sensor.i2c.registers, RA_TEMP_OUT_H, 340);
+        write_i16(&mut sensor.i2c.registers, RA_GYRO_XOUT_H, 131);
+        write_i16(&mut sensor.i2c.registers, RA_GYRO_YOUT_H, -655);
+        write_i16(&mut sensor.i2c.registers, RA_GYRO_ZOUT_H, 0);
+    }
+
+    #[test]
+    fn verify_device() {
+        let mut sensor = Mpu6050::new(MockI2c::new());
+        sensor.verify_device().unwrap();
+
+        sensor.set_address(ADDRESS_AD0_HIGH).unwrap();
+        assert_eq!(sensor.address(), ADDRESS_AD0_HIGH);
+        sensor.verify_device().unwrap();
+    }
+
+    #[test]
+    fn rejects_invalid_i2c_address() {
+        let mut sensor = Mpu6050::new(MockI2c::new());
+        assert!(matches!(
+            sensor.set_address(0x70),
+            Err(MpuError::InvalidAddress(0x70))
+        ));
+    }
+
+    #[test]
+    fn init_configures_expected_registers() {
+        let mut sensor = Mpu6050::new(MockI2c::new());
+        let mut delay = MockDelay;
+
+        sensor.init(&mut delay).unwrap();
+
+        assert_eq!(
+            sensor.i2c.registers[RA_PWR_MGMT_1 as usize],
+            PWR_MGMT_1_CLKSEL_PLL_X_GYRO
+        );
+        assert_eq!(sensor.i2c.registers[RA_SMPLRT_DIV as usize], 0);
+        assert_eq!(sensor.i2c.registers[RA_CONFIG as usize], 0);
+        assert_eq!(sensor.i2c.registers[RA_ACCEL_CONFIG as usize], 0);
+        assert_eq!(sensor.i2c.registers[RA_GYRO_CONFIG as usize], 0);
+        assert!(
+            sensor
+                .i2c
+                .writes
+                .contains(&(RA_PWR_MGMT_1, PWR_MGMT_1_CLKSEL_PLL_X_GYRO))
+        );
+    }
+
+    #[test]
+    fn setters_preserve_unrelated_bits() {
+        let mut sensor = Mpu6050::new(MockI2c::new());
+
+        sensor.i2c.registers[RA_CONFIG as usize] = 0b0010_1000;
+        sensor.set_dlpf(DlpfConfig::Dlpf42).unwrap();
+        assert_eq!(sensor.i2c.registers[RA_CONFIG as usize], 0b0010_1011);
+
+        sensor.i2c.registers[RA_ACCEL_CONFIG as usize] = 0b1010_0000;
+        sensor.set_accel_range(AccelRange::G8).unwrap();
+        assert_eq!(sensor.i2c.registers[RA_ACCEL_CONFIG as usize], 0b1011_0000);
+
+        sensor.i2c.registers[RA_GYRO_CONFIG as usize] = 0b1100_0000;
+        sensor.set_gyro_range(GyroRange::Degree2000).unwrap();
+        assert_eq!(sensor.i2c.registers[RA_GYRO_CONFIG as usize], 0b1101_1000);
+    }
+
+    #[test]
+    fn reads_raw_and_scaled_data() {
+        let mut sensor = Mpu6050::new(MockI2c::new());
+        write_sample_data(&mut sensor);
+
+        let raw = sensor.get_raw_data().unwrap();
+        assert_eq!(raw.accel, [16_384, -16_384, 8_192]);
+        assert_eq!(raw.temperature, 340);
+        assert_eq!(raw.gyro, [131, -655, 0]);
+
+        let data = sensor.get_data().unwrap();
+        assert_eq!(data.accel, [1.0, -1.0, 0.5]);
+        assert!((data.temperature - 37.53).abs() < 0.001);
+        assert!((data.gyro[0] - 1.0).abs() < f32::EPSILON);
+        assert!((data.gyro[1] + 5.0).abs() < f32::EPSILON);
+        assert!((data.gyro[2] - 0.0).abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn get_data_applies_calibration_bias() {
+        let mut sensor = Mpu6050::new(MockI2c::new());
+        write_sample_data(&mut sensor);
+        sensor.set_accel_bias((1.0, -1.0, 0.5));
+        sensor.set_gyro_bias((1.0, -5.0, 0.0));
+
+        let data = sensor.get_data().unwrap();
+        assert_eq!(data.accel, [0.0, 0.0, 0.0]);
+        assert_eq!(data.gyro, [0.0, 0.0, 0.0]);
+    }
+
+    #[test]
+    fn temperature_units_convert() {
+        let mut sensor = Mpu6050::new(MockI2c::new());
+        write_i16(&mut sensor.i2c.registers, RA_TEMP_OUT_H, 0);
+
+        assert!((sensor.get_temperature().unwrap() - 36.53).abs() < 0.001);
+
+        sensor.set_temperature_unit(TemperatureRange::F);
+        assert!((sensor.get_temperature().unwrap() - 97.754).abs() < 0.001);
+
+        sensor.set_temperature_unit(TemperatureRange::K);
+        assert!((sensor.get_temperature().unwrap() - 309.68).abs() < 0.001);
+    }
+
+    #[test]
+    fn calibration_rejects_zero_cycles() {
+        let config = Mpu6050Config::default().with_calibration_cycles(0);
+        let mut sensor = Mpu6050::new_with_config(MockI2c::new(), config);
+        let mut delay = MockDelay;
+
+        assert!(matches!(
+            sensor.calibrate_gyro(&mut delay),
+            Err(MpuError::InvalidCalibrationCycles)
+        ));
+    }
+
+    #[test]
+    fn calibration_uses_raw_gyro() {
+        let config = Mpu6050Config::default().with_calibration_cycles(2);
+        let mut sensor = Mpu6050::new_with_config(MockI2c::new(), config);
+        let mut delay = MockDelay;
+
+        write_i16(&mut sensor.i2c.registers, RA_GYRO_XOUT_H, 131);
+        write_i16(&mut sensor.i2c.registers, RA_GYRO_YOUT_H, 131);
+        write_i16(&mut sensor.i2c.registers, RA_GYRO_ZOUT_H, 131);
+
+        sensor.calibrate_gyro(&mut delay).unwrap();
+        assert_eq!(sensor.gyro_bias(), (1.0, 1.0, 1.0));
+
+        let gyro = sensor.get_gyro().unwrap();
+        assert_eq!(gyro, (0.0, 0.0, 0.0));
+    }
+
+    #[test]
+    fn raw_register_access() {
+        let mut sensor = Mpu6050::new(MockI2c::new());
+
+        sensor.write_register(0x1, 0x11).unwrap();
+        assert_eq!(sensor.read_register(0x1).unwrap(), 0x11);
+
+        sensor.update_register(0x1, 0x0F, 0x05).unwrap();
+        assert_eq!(sensor.read_register(0x1).unwrap(), 0x15);
+    }
+
+    #[test]
+    fn reads_fifo_count() {
+        let mut sensor = Mpu6050::new(MockI2c::new());
+
+        // 0b_0000_0001_0000_0010 = 258
+        sensor.i2c.registers[RA_FIFO_COUNTH as usize] = 0x01;
+        sensor.i2c.registers[RA_FIFO_COUNTL as usize] = 0x02;
+
+        assert_eq!(sensor.get_fifo_count().unwrap(), 258);
+    }
+}
